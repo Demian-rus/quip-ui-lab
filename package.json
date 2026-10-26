@@ -1,0 +1,1 @@
+{"name":"quip-ui-lab","version":"1.0.0","private":true,"type":"module","scripts":{"test":"node --test tests/model.test.cjs","test:browser":"node tests/smoke.cjs"},"devDependencies":{"playwright-core":"1.55.0"}}
