@@ -44,6 +44,8 @@ jobs:
     permissions:
       pages: write
       id-token: write
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -51,3 +53,26 @@ jobs:
       - name: Deploy laboratory only
         id: deployment
         uses: actions/deploy-pages@v4
+  verify-public:
+    if: github.event_name != 'pull_request'
+    needs: deploy
+    runs-on: ubuntu-latest
+    env:
+      LAB_URL: ${{ needs.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright-core install --with-deps chromium --only-shell
+      - name: Full mobile flows against public Pages URLs
+        run: npm run test:browser
+      - name: Real touch input against public Pages URLs
+        run: node tests/public-touch.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab-public-mobile-evidence
+          path: test-results/
